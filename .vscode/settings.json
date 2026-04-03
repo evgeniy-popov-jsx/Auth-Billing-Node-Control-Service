@@ -1,0 +1,6 @@
+{
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.autoSave": "afterDelay"
+}
