@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client"
+  output   = "generate"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  INACTIVE
+  PENDING
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  BLOCKED
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  username  String     @unique @db.VarChar(25)
+  password  String
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Связи
+  session      Session?
+  subscription Subscription?
+  transactions Transaction[]
+
+  @@index([email])
+  @@index([status])
+  @@map("Users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  jwtToken     String
+  refreshToken String
+  expiresAt    DateTime
+  deviceInfo   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Sessions")
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String             @unique
+  status    SubscriptionStatus @default(EXPIRED)
+  expiresAt DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Subscriptions")
+}
+
+model Transaction {
+  id        String            @id @default(uuid())
+  userId    String
+  amount    Float
+  currency  String
+  status    TransactionStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("Transactions")
+}
