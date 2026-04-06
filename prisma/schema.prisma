@@ -42,6 +42,7 @@ model User {
 
   @@index([email])
   @@index([status])
+  @@index([username])
   @@map("Users")
 }
 
