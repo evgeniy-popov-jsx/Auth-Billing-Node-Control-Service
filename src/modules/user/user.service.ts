@@ -22,4 +22,33 @@ export class UserService {
 
     return data as UserDto;
   }
+
+  async createUser(data: { username: string; email: string; password: string }) {
+    return this.prismaService.user.create({
+      data,
+    });
+  }
+
+  /**
+   * Поиск пользователя по username
+   * @param username - уникальный username пользователя
+   * @returns true/false
+   */
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    const user = await this.prismaService.user.findUnique({
+      where: { username },
+    });
+    return !user;
+  }
+  /**
+   * Поиск пользователя по username
+   * @param email - уникальная почта пользователя
+   * @returns true/false
+   */
+  async isEmailAvailable(email: string): Promise<boolean> {
+    const userEmail = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+    return !userEmail;
+  }
 }

@@ -1,65 +1,81 @@
-import { Injectable } from '@nestjs/common';
-import {
-  RegisterDto,
-  LoginDto,
-  AuthenticateDto,
-  LogoutDto,
-  RefreshTokenDto,
-} from './dto/auth.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { RegisterDto } from './dto/auth.dto';
+import { UserService } from '../user/user.service';
+import * as bcrypt from 'bcrypt';
+import { generateSeedPhrase, normalizeSeed } from 'src/utils/seed.util';
 
 @Injectable()
 export class AuthService {
-  constructor() {}
+  constructor(private readonly userService: UserService) {}
 
   /**
    * Регистрация нового пользователя
    * @param dto - объект данных для регистрации
    *   - username: имя пользователя
-   *   - email: адрес почты (если нужен)
+   *   - email: адрес почты
    * @returns объект с данными пользователя, включая сгенерированную seed-фразу
    */
   async register(dto: RegisterDto) {
-    // логика регистрации
+    const usernameTaken = await this.userService.findByUserName(dto.username);
+    if (usernameTaken) throw new BadRequestException('Username already taken');
+
+    const emailTaken = await this.userService.isEmailAvailable(dto.email);
+    if (!emailTaken) throw new BadRequestException('Email already taken');
+
+    const seedPhrase = generateSeedPhrase();
+    const normalized = normalizeSeed(seedPhrase);
+    const hash: string = await bcrypt.hash(normalized, 10);
+
+    const user = await this.userService.createUser({
+      username: dto.username,
+      email: dto.email,
+      password: hash,
+    });
+
+    return {
+      userId: user.id,
+      seedPhrase,
+    };
   }
 
-  /**
-   * Логин пользователя
-   * @param dto - объект данных для входа
-   *   - username: имя пользователя
-   *   - seedPhrase: сид-фраза пользователя
-   * @returns данные пользователя / токен
-   */
-  async login(dto: LoginDto) {
-    // логика входа
-  }
+  // /**
+  //  * Логин пользователя
+  //  * @param dto - объект данных для входа
+  //  *   - username: имя пользователя
+  //  *   - seedPhrase: сид-фраза пользователя
+  //  * @returns данные пользователя / токен
+  //  */
+  // async login(dto: LoginDto) {
+  //   // логика входа
+  // }
 
-  /**
-   * Проверка токена / аутентификация пользователя
-   * @param dto - объект данных для аутентификации
-   *   - token: access token
-   * @returns данные пользователя
-   */
-  async authenticate(dto: AuthenticateDto) {
-    // логика проверки токена
-  }
+  // /**
+  //  * Проверка токена / аутентификация пользователя
+  //  * @param dto - объект данных для аутентификации
+  //  *   - token: access token
+  //  * @returns данные пользователя
+  //  */
+  // async authenticate(dto: AuthenticateDto) {
+  //   // логика проверки токена
+  // }
 
-  /**
-   * Выход пользователя
-   * @param dto - объект данных для выхода
-   *   - userId: id пользователя
-   * @returns результат выхода (например, удаление refresh token)
-   */
-  async logout(dto: LogoutDto) {
-    // логика выхода
-  }
+  // /**
+  //  * Выход пользователя
+  //  * @param dto - объект данных для выхода
+  //  *   - userId: id пользователя
+  //  * @returns результат выхода (например, удаление refresh token)
+  //  */
+  // async logout(dto: LogoutDto) {
+  //   // логика выхода
+  // }
 
-  /**
-   * Обновление токена (refresh)
-   * @param dto - объект данных для обновления токена
-   *   - refreshToken: refresh токен
-   * @returns новый access token
-   */
-  async refreshToken(dto: RefreshTokenDto) {
-    // логика обновления токена
-  }
+  // /**
+  //  * Обновление токена (refresh)
+  //  * @param dto - объект данных для обновления токена
+  //  *   - refreshToken: refresh токен
+  //  * @returns новый access token
+  //  */
+  // async refreshToken(dto: RefreshTokenDto) {
+  //   // логика обновления токена
+  // }
 }
