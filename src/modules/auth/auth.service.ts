@@ -73,7 +73,7 @@ export class AuthService {
           const error = err instanceof Error ? err : new Error(String(err));
           return reject(error);
         }
-        console.log(req.session);
+
         resolve({
           userId: user.id,
           userName: user.username,
