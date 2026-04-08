@@ -1,8 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { RegisterDto } from './dto/auth.dto';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  // AuthenticateDto,
+  LoginDto,
+  // LogoutDto,
+  // RefreshTokenDto,
+  RegisterDto,
+} from './dto/auth.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { generateSeedPhrase, normalizeSeed } from 'src/utils/seed.util';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +36,7 @@ export class AuthService {
     const user = await this.userService.createUser({
       username: dto.username,
       email: dto.email,
-      password: hash,
+      seedPhrase: hash,
     });
 
     return {
@@ -38,16 +45,42 @@ export class AuthService {
     };
   }
 
-  // /**
-  //  * Логин пользователя
-  //  * @param dto - объект данных для входа
-  //  *   - username: имя пользователя
-  //  *   - seedPhrase: сид-фраза пользователя
-  //  * @returns данные пользователя / токен
-  //  */
-  // async login(dto: LoginDto) {
-  //   // логика входа
-  // }
+  /**
+   * Логин пользователя
+   * @param dto - объект данных для входа
+   *   - username: имя пользователя
+   *   - seedPhrase: сид-фраза пользователя
+   * @returns данные пользователя / токен
+   */
+  async login(dto: LoginDto, req: Request) {
+    const user = await this.userService.findByUserName(dto.username);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid username or seed phrase');
+    }
+
+    const normalizedSeed = normalizeSeed(dto.seedPhrase);
+    const isValid = await bcrypt.compare(normalizedSeed, user.seedPhrase);
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid username or seed phrase');
+    }
+
+    return new Promise((resolve, reject) => {
+      req.session.userId = user.id;
+      req.session.save((err) => {
+        if (err) {
+          const error = err instanceof Error ? err : new Error(String(err));
+          return reject(error);
+        }
+        console.log(req.session);
+        resolve({
+          userId: user.id,
+          userName: user.username,
+        });
+      });
+    });
+  }
 
   // /**
   //  * Проверка токена / аутентификация пользователя

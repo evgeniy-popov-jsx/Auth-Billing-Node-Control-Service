@@ -28,6 +28,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
       default:
         // Остальные ошибки Prisma
+        console.log(exception);
         throw new BadRequestException('Database error');
     }
   }

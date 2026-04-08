@@ -3,5 +3,5 @@ export class UserDto {
   email: string;
   username: string;
   status?: string;
-  password?: string;
+  seedPhrase: string;
 }

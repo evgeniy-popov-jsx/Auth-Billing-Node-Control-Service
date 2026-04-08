@@ -23,7 +23,7 @@ export class UserService {
     return data as UserDto;
   }
 
-  async createUser(data: { username: string; email: string; password: string }) {
+  async createUser(data: { username: string; email: string; seedPhrase: string }) {
     return this.prismaService.user.create({
       data,
     });
