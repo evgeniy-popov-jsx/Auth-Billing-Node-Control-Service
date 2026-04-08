@@ -1,0 +1,32 @@
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Request } from 'express';
+import { IS_PUBLIC_KEY } from 'src/commons/custom-decorators/public';
+
+@Injectable()
+export class SessionGuard implements CanActivate {
+  constructor(private readonly reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
+    const req = context.switchToHttp().getRequest<Request>();
+    if (req.session && req.session.userId) {
+      return true;
+    }
+
+    throw new UnauthorizedException('Not logged in');
+  }
+}

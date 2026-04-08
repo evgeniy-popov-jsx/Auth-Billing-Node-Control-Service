@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { SessionGuard } from './modules/auth/session.guard';
 
 @Module({
   imports: [PrismaModule, AuthModule, UserModule],
   controllers: [],
-  providers: [],
+  providers: [SessionGuard],
 })
 export class AppModule {}
