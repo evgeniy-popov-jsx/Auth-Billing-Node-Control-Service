@@ -1,11 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import {
-  // AuthenticateDto,
-  LoginDto,
-  // LogoutDto,
-  // RefreshTokenDto,
-  RegisterDto,
-} from './dto/auth.dto';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { generateSeedPhrase, normalizeSeed } from 'src/utils/seed.util';
@@ -50,7 +44,7 @@ export class AuthService {
    * @param dto - объект данных для входа
    *   - username: имя пользователя
    *   - seedPhrase: сид-фраза пользователя
-   * @returns данные пользователя / токен
+   * @returns Создание сессии
    */
   async login(dto: LoginDto, req: Request) {
     const user = await this.userService.findByUserName(dto.username);
@@ -81,34 +75,4 @@ export class AuthService {
       });
     });
   }
-
-  // /**
-  //  * Проверка токена / аутентификация пользователя
-  //  * @param dto - объект данных для аутентификации
-  //  *   - token: access token
-  //  * @returns данные пользователя
-  //  */
-  // async authenticate(dto: AuthenticateDto) {
-  //   // логика проверки токена
-  // }
-
-  // /**
-  //  * Выход пользователя
-  //  * @param dto - объект данных для выхода
-  //  *   - userId: id пользователя
-  //  * @returns результат выхода (например, удаление refresh token)
-  //  */
-  // async logout(dto: LogoutDto) {
-  //   // логика выхода
-  // }
-
-  // /**
-  //  * Обновление токена (refresh)
-  //  * @param dto - объект данных для обновления токена
-  //  *   - refreshToken: refresh токен
-  //  * @returns новый access token
-  //  */
-  // async refreshToken(dto: RefreshTokenDto) {
-  //   // логика обновления токена
-  // }
 }
