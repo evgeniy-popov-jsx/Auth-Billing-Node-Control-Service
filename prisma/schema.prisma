@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "generate"
+  provider     = "prisma-client"
+  output       = "generate"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -27,20 +28,19 @@ enum TransactionStatus {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  username  String     @unique @db.VarChar(25)
-  password  String
-  status    UserStatus @default(ACTIVE)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(uuid())
+  email      String     @unique
+  username   String     @unique @db.VarChar(25)
+  seedPhrase String
+  status     UserStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   // Связи
   session      Session?
   subscription Subscription?
   transactions Transaction[]
 
-  @@index([email])
   @@index([status])
   @@map("Users")
 }
